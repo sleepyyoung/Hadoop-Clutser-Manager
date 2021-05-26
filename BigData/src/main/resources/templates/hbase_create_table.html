@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <title></title>
+    <link rel="stylesheet" th:href="@{/layui/css/layui.css}" media="all">
+    <script th:src="@{/layui/layui.js}" charset="utf-8"></script>
+    <script type='text/javascript' th:src='@{/js/jquery.min.js}'></script>
+    <script type="text/javascript">
+        $(function () {
+            const show_count = 10000;
+            $("#btn_addtr").click(function () {
+                const length = $("#dynamicTable tbody tr").length;
+                if (length < show_count) {
+                    $("#tab11 tbody tr").clone().appendTo("#dynamicTable tbody");
+                    changeIndex();
+                }
+            });
+        });
+
+        function changeIndex() {
+            let i = 1;
+            $("#dynamicTable tbody tr").each(function () {
+                $(this).find("input[name='NO']").val(i++);
+            });
+        }
+
+        function deltr(opp) {
+            const length = $("#dynamicTable tbody tr").length;
+            if (length <= 1) {
+                layer.msg("至少保留一行");
+            } else {
+                $(opp).parent().parent().remove();
+                changeIndex();
+            }
+        }
+    </script>
+</head>
+<body>
+
+<blockquote class="layui-elem-quote layui-text">
+    <h3>请输入表名</h3>
+</blockquote>
+<form class="layui-form" action="" method="post" style="margin-top: 1%;">
+    <div class="layui-form-item">
+        <label class="layui-form-label" style="width: 170px;text-align: center;">请输入表名：</label>
+        <div class="layui-input-block" style="margin-left: 150px;">
+            <input id="tableName" type="text" autocomplete="off" placeholder="请输入表名" class="layui-input"
+                   style="width: 70%">
+        </div>
+    </div>
+</form>
+<blockquote class="layui-elem-quote layui-text">
+    <h3>请输入列族名（至少一个且不能重复）：</h3>
+</blockquote>
+<div style="width:720px;margin:20px auto;">
+    <table class="layui-hide" id="tab11" style="display: none;">
+        <tbody>
+        <tr>
+            <td align="center">
+                <input class="layui-input familyName" placeholder="请输入列族名" type="text" name="post"/>
+            </td>
+            <td>
+                <input style="margin-bottom: 2px;" type="button" id="Button1" onClick="deltr(this)"
+                       class="layui-btn" value="删除此行">
+            </td>
+        </tr>
+        </tbody>
+    </table>
+    <div class="layui-row" style="margin-top: 10px;">
+        <div class="layui-col-xs6" style="margin-top: 10px;">
+            <div class="grid-demo grid-demo-bg1">
+                <button id="btn_addtr" style="margin-bottom: 10px;" class="layui-btn" lay-submit=""
+                        lay-filter="demo1"> 增加一行
+                </button>
+            </div>
+        </div>
+        <div class="layui-col-xs6" style="margin-top: 10px;">
+            <div class="grid-demo">
+                <button style="margin-bottom: 10px;" id="confirm" onclick="getData()"
+                        class="layui-btn" lay-submit="" lay-filter="demo1">确认添加
+                </button>
+            </div>
+        </div>
+    </div>
+    <table id="dynamicTable" width="700" border="0" cellspacing="0" cellpadding="0">
+        <tbody>
+        <tr>
+            <td align="center">
+                <input class="layui-input familyName" placeholder="请输入列族名" type="text" name="post"/></td>
+            <td>
+                <input style="margin-bottom: 2px;" type="button" id="Button2" onClick="deltr(this)"
+                       class="layui-btn"
+                       value="删除此行">
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+    <script type="text/javascript">
+        function getData() {
+            const tableName = $("#tableName").val();
+            if (tableName.replace(" ", "") === "") {
+                layer.msg("表名不能为空！", {icon: 5});
+            } else {
+                let familyNames = [];
+                const lis = document.getElementsByClassName('familyName');
+                const lisLen = lis.length;
+                for (let i = 1; i < lisLen; i++) {
+                    const v = lis[i].value;
+                    if (v.replace(" ", "") !== "") {
+                        familyNames.push(lis[i].value);
+                    }
+                }
+                if (familyNames.length === 0) {
+                    layer.msg("至少需要一个列族名！", {icon: 5});
+                    return;
+                }
+                layer.msg('正在创建...', {
+                    icon: 16
+                    , shade: 0.01
+                });
+                $.post("/api/hbase/create-table", {
+                    tableName: tableName,
+                    familyNames: JSON.stringify(familyNames)
+                }, function (result) {
+                    if (JSON.parse(result)['msg'] === "success") {
+                        layer.msg("创建成功！", {icon: 6});
+                    } else {
+                        layer.alert(JSON.parse(result)['detail']);
+                    }
+                })
+            }
+        }
+    </script>
+</div>
+</body>
+</html>

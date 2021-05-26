@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+<!--    <script th:fragment="right-side">-->
+<!--        layui.use(['element', 'layer', 'util'], function () {-->
+<!--            const layer = layui.layer, util = layui.util;-->
+<!--            util.event('lay-header-event', {-->
+<!--                menuRight: function () {-->
+<!--                    layer.open({-->
+<!--                        type: 2-->
+<!--                        , content: '/hbase/create-table'-->
+<!--                        , area: ['260px', '100%']-->
+<!--                        , offset: 'rt'-->
+<!--                        , anim: 5-->
+<!--                        , shadeClose: true-->
+<!--                    });-->
+<!--                }-->
+<!--            });-->
+<!--        });-->
+<!--    </script>-->
+</head>
+<body>
+<div th:fragment="left-side" class="layui-side layui-bg-black">
+    <div class="layui-side-scroll">
+        <ul class="layui-nav layui-nav-tree" lay-filter="test">
+            <li class="layui-nav-item layui-nav-itemed">
+                <a class="" href="javascript:;">HDFS</a>
+                <dl class="layui-nav-child">
+                    <dd><a target="_blank" href="http://centos01:50070">centos01:50070</a></dd>
+                    <dd><a target="_blank" href="http://centos02:50070">centos02:50070</a></dd>
+                </dl>
+            </li>
+            <li class="layui-nav-item layui-nav-itemed">
+                <a class="" href="javascript:;">YARN</a>
+                <dl class="layui-nav-child">
+                    <dd><a target="_blank" href="http://centos01:8088">centos01:8088</a></dd>
+                    <dd><a target="_blank" href="http://centos02:8088">centos02:8088</a></dd>
+                </dl>
+            </li>
+            <li class="layui-nav-item layui-nav-itemed">
+                <a class="" href="javascript:;">HBase</a>
+                <dl class="layui-nav-child">
+                    <dd><a target="_blank" href="http://centos01:16010">centos01:16010</a></dd>
+                    <dd><a target="_blank" href="http://centos02:16010">centos02:16010</a></dd>
+                </dl>
+            </li>
+            <li class="layui-nav-item layui-nav-itemed">
+                <a class="" href="javascript:;">Spark</a>
+                <dl class="layui-nav-child">
+                    <dd><a target="_blank" href="http://centos01:8080">centos01:8080</a></dd>
+                    <dd><a target="_blank" href="http://centos02:8080">centos02:8080</a></dd>
+                </dl>
+            </li>
+            <li class="layui-nav-item layui-nav-itemed">
+                <a class="" href="javascript:;">Storm</a>
+                <dl class="layui-nav-child">
+                    <dd><a target="_blank" href="http://centos01:9999">centos01:9999</a></dd>
+                </dl>
+            </li>
+            <li class="layui-nav-item layui-nav-itemed">
+                <a class="" href="javascript:;">Elasticsearch</a>
+                <dl class="layui-nav-child">
+                    <dd><a target="_blank" href="http://centos01:9200">centos01:9200</a></dd>
+                </dl>
+            </li>
+            <li class="layui-nav-item layui-nav-itemed">
+                <a class="" href="javascript:;">Kibana</a>
+                <dl class="layui-nav-child">
+                    <dd><a target="_blank" href="http://centos01:5601">centos01:5601</a></dd>
+                </dl>
+            </li>
+            <li class="layui-nav-item layui-nav-itemed">
+                <a class="" href="javascript:;">Elasticsearch Head</a>
+                <dl class="layui-nav-child">
+                    <dd><a target="_blank" href="http://centos01:9100">centos01:9100</a></dd>
+                </dl>
+            </li>
+        </ul>
+    </div>
+</div>
+
+
+</body>
+</html>

@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>MapReduce</title>
+    <link rel="stylesheet" th:href="@{/layui/css/layui.css}" media="all">
+    <script type='text/javascript' th:src='@{/js/jquery.min.js}'></script>
+    <script th:src="@{/layui/layui.js}" charset="utf-8"></script>
+    <script>
+        function wordcount() {
+            layer.msg('正在执行WordCount...', {
+                icon: 16
+                , shade: 0.01
+            });
+            const hdfsFile = $("#hdfsFile").val();
+            $.post("/api/mapreduce/wordcount", {
+                hdfsFile: hdfsFile
+            }, function (result) {
+                if (JSON.parse(result)['msg'] === "success") {
+                    $.get("/api/hdfs/getFileContent", {fileName: hdfsFile}, function (result) {
+                        if (JSON.parse(result)['msg'] === "success") {
+                            layer.msg('执行成功');
+                            document.getElementById("original-textarea").innerHTML = JSON.parse(result)['detail'];
+                        } else {
+                            layer.msg('执行失败');
+                            layer.alert(JSON.parse(result)['detail'])
+                        }
+                    })
+                    document.getElementById("wcresult-textarea").innerText = JSON.parse(result)['detail'];
+                } else {
+                    layer.alert(JSON.parse(result)['detail'])
+                }
+            })
+        }
+    </script>
+</head>
+<body>
+<div class="layui-layout layui-layout-admin">
+    <div class="layui-header">
+        <div class="layui-logo layui-hide-xs layui-bg-black">集群管理系统</div>
+        <ul class="layui-nav layui-layout-left">
+            <li class="layui-nav-item layui-show-xs-inline-block layui-hide-sm" lay-header-event="menuLeft">
+                <i class="layui-icon layui-icon-spread-left"></i>
+            </li>
+
+            <li class="layui-nav-item layui-hide-xs"><a href="/hdfs">HDFS</a></li>
+            <li class="layui-nav-item layui-hide-xs"><a href="/kafka">Spark Streaming &
+                Kafka</a></li>
+            <li style="background: #3F3F3F" class="layui-nav-item layui-hide-xs"><a href="/mapreduce">MapReduce の
+                WordCount</a></li>
+            <li class="layui-nav-item layui-hide-xs"><a href="/hbase">HBase</a></li>
+        </ul>
+        <ul class="layui-nav layui-layout-right">
+            <li class="layui-nav-item" lay-header-event="menuRight" lay-unselect>
+                <a href="/shell">
+                    <i class="layui-icon layui-icon-fonts-code" style="font-size: 20px;margin-right: 3px;">&nbsp;&nbsp;&nbsp;Shell控制台</i>
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <div th:replace="~{public::left-side}"></div>
+
+    <div class="layui-body">
+        <blockquote class="layui-elem-quote layui-text">
+            <h1>MapReduce实现单词计数</h1>
+        </blockquote>
+        <form class="layui-form" action="" method="post" style="margin-top: 1%;">
+            <div class="layui-form-item">
+                <label class="layui-form-label" style="width: 170px;text-align: center;">请输入HDFS文件路径：</label>
+                <div class="layui-input-block" style="margin-left: 150px;">
+                    <input id="hdfsFile" type="text" autocomplete="off" placeholder="请输入HDFS文件路径" class="layui-input"
+                           style="width: 70%">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <div class="layui-input-block" style="text-align: left;margin-left: 50px;">
+                    <button onclick="wordcount()" type="button" class="layui-btn" lay-submit="" lay-filter="demo1">
+                        执行WordCount
+                    </button>
+                </div>
+            </div>
+        </form>
+
+        <div id="result">
+            <blockquote class="layui-elem-quote layui-text">
+                <div class="layui-row">
+                    <div class="layui-col-xs6">
+                        <blockquote class="layui-elem-quote layui-text">
+                            <h3>原始文件内容：</h3>
+                        </blockquote>
+                        <div id="original-textarea" style="width: 90%;height: 400px;resize: none;"
+                             lay-verify="required" class="layui-textarea">
+                        </div>
+                    </div>
+                    <div class="layui-col-xs6">
+                        <blockquote class="layui-elem-quote layui-text">
+                            <h3>WordCount结果：</h3>
+                        </blockquote>
+                        <div id="wcresult-textarea" style="width: 90%;height: 400px;resize: none;"
+                             lay-verify="required" class="layui-textarea"></div>
+                    </div>
+                </div>
+            </blockquote>
+        </div>
+    </div>
+</div>
+</body>
+</html>

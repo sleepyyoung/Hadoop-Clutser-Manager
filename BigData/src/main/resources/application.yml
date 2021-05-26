@@ -1,0 +1,40 @@
+server:
+  port: 9999
+
+hdfs:
+  path: "hdfs://192.168.213.128:8020"
+  username: "hadoop"
+
+mysql:
+  user: hive
+  password: hive
+  driver-class-name: com.mysql.cj.jdbc.Driver
+  url: jdbc:mysql://localhost:3306/spark?useSSL=false&useUnicode=true&characterEncoding=utf-8&serverTimezone=Hongkong&allowPublicKeyRetrieval=true
+
+zookeeper:
+  quorum: 192.168.213.128:2181,192.168.213.129:2181,192.168.213.130:2181
+
+shell:
+  username: hadoop
+  password: 19834044876
+  port: 22
+
+spring:
+  kafka:
+    bootstrap-servers: centos01:9092
+    producer:
+      retries: 1
+      batch-size: 16384
+      buffer-memory: 33554432
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      acks: 1
+    consumer:
+      group-id: test-consumer-group
+      enable-auto-commit: false
+      auto-offset-reset: latest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+    listener:
+      concurrency: 6
+      ack-mode: MANUAL

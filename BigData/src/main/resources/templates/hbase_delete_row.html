@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>HBase</title>
+    <link rel="stylesheet" th:href="@{/layui/css/layui.css}" media="all">
+    <script type='text/javascript' th:src='@{/js/jquery.min.js}'></script>
+    <script th:src="@{/layui/layui.js}" charset="utf-8"></script>
+    <script type="text/javascript">
+        function getQueryVariable(variable) {
+            let query = window.location.search.substring(1);
+            let vars = query.split("&");
+            for (let i = 0; i < vars.length; i++) {
+                let pair = vars[i].split("=");
+                if (pair[0] === variable) {
+                    return pair[1];
+                }
+            }
+            return false;
+        }
+
+        $(function () {
+            const show_count = 10000;
+            $("#btn_addtr").click(function () {
+                var length = $("#dynamicTable tbody tr").length;
+                if (length < show_count)      {
+                    $("#tab11 tbody tr").clone().appendTo("#dynamicTable tbody");
+                    changeIndex();
+                }
+            });
+        });
+
+        function changeIndex() {
+            let i = 1;
+            $("#dynamicTable tbody tr").each(function () {
+                $(this).find("input[name='NO']").val(i++);
+            });
+        }
+
+        function deltr(opp) {
+            $(opp).parent().parent().remove();
+            changeIndex();
+        }
+
+        function getData() {
+            let rowKeys = [];
+            const rows = document.getElementsByClassName('row-d');
+            const rowsLen = rows.length;
+            for (let i = 1; i < rowsLen; i++) {
+                const v = rows[i].value;
+                if (v.replace(" ", "") !== "") {
+                    rowKeys.push(v);
+                }
+            }
+            layer.msg('正在删除...', {
+                icon: 16
+                , shade: 0.01
+            });
+            $.post("/api/hbase/delete-row", {
+                tableName: getQueryVariable("table-name"),
+                rowKeys: JSON.stringify(rowKeys)
+            }, function (result) {
+                if (JSON.parse(result)['msg'] === "success") {
+                    layer.msg("删除成功！", {icon: 6});
+                } else {
+                    layer.alert(JSON.parse(result)['detail']);
+                }
+            })
+        }
+    </script>
+</head>
+<body>
+<blockquote class="layui-elem-quote layui-text">
+    <h3>点击【增加一行】增加要删除的行键名：</h3>
+    <h6>（不填的话默认删除所有行键）</h6>
+</blockquote>
+<div style="width:720px;margin:20px auto;">
+    <table class="layui-table" id="tab11" style="display: none">
+        <tbody>
+        <tr>
+            <td align="center">
+                <input placeholder="请输入行键名（不填的话默认删除所有行键）" class="layui-input row-d" type="text" name="post"/>
+            </td>
+            <td>
+                <input style="margin-bottom: 2px;" type="button" id="Button1" onClick="deltr(this)" class="layui-btn"
+                       value="删除此行">
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+
+    <div class="layui-row" style="margin-top: 10px;">
+        <div class="layui-col-xs6" style="margin-top: 10px;">
+            <div class="grid-demo grid-demo-bg1">
+                <button id="btn_addtr" style="margin-bottom: 10px;" class="layui-btn" lay-submit="" lay-filter="demo1">
+                    增加一行
+                </button>
+            </div>
+        </div>
+        <div class="layui-col-xs6" style="margin-top: 10px;">
+            <div class="grid-demo">
+                <button style="margin-bottom: 10px;" id="confirm" onclick="getData()"
+                        class="layui-btn" lay-submit="" lay-filter="demo1">确认删除
+                </button>
+            </div>
+        </div>
+        <h6>（删除操作是非原子性的，请确保每个行键名称都存在）</h6>
+    </div>
+
+    <table class="layui-table" id="dynamicTable" width="700" border="0" cellspacing="0" cellpadding="0">
+        <thead>
+        <tr>
+        </tr>
+        </thead>
+        <tbody>
+        <tr></tr>
+        </tbody>
+    </table>
+
+</div>
+
+</body>
+</html>

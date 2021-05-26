@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Kafka</title>
+    <link rel="stylesheet" th:href="@{/layui/css/layui.css}" media="all">
+    <script type='text/javascript' th:src='@{/js/jquery.min.js}'></script>
+    <script th:src="@{/layui/layui.js}" charset="utf-8"></script>
+    <script>
+        function send() {
+            const p1 = $('#producer');
+            const input = $("#content");
+            const v1 = input.val();
+            if (v1.replace(" ", "") === "") {
+                layer.msg('发送内容不能为空');
+            } else {
+                $.post("/api/kafka/send", {
+                    message: v1,
+                    topic: "topictest"
+                }, function (result) {
+                    if (JSON.parse(result)["msg"] === "success") {
+                        const ele = document.getElementById("producer");
+                        ele.innerText = ele.innerText + v1 + "\n"
+                        input.val("");
+                        const scrollHeight = p1.prop("scrollHeight");
+                        p1.scrollTop(scrollHeight, 200);
+                    } else {
+                        layer.alert(JSON.parse(result)["detail"])
+                    }
+                })
+            }
+        }
+
+        function send2() {
+            const p2 = $('#producer2');
+            const input2 = $("#content2");
+            const v2 = input2.val();
+            if (v2.replace(" ", "") === "") {
+                layer.msg('发送内容不能为空');
+            } else {
+                $.post("/api/kafka/send", {
+                    message: v2,
+                    topic: "topictest2"
+                }, function (result) {
+                    if (JSON.parse(result)["msg"] === "success") {
+                        const ele = document.getElementById("producer2");
+                        ele.innerText = ele.innerText + v2 + "\n"
+                        input2.val("");
+                        const scrollHeight = p2.prop("scrollHeight");
+                        p2.scrollTop(scrollHeight, 200);
+                    } else {
+                        layer.alert(JSON.parse(result)["detail"])
+                    }
+                })
+            }
+        }
+
+        $(function () {
+            const c = $('#consumer');
+            setInterval(function () {
+                $.post("/api/kafka/receive", function (result) {
+                    if (result.replace(" ", "") !== "") {
+                        const ele = document.getElementById("consumer");
+                        ele.innerText = ele.innerText + result + "\n"
+                        const scrollHeight = c.prop("scrollHeight");
+                        c.scrollTop(scrollHeight, 200);
+                    }
+                })
+            }, 100);
+        });
+
+        function sleep(time) {
+            var timeStamp = new Date().getTime();
+            var endTime = timeStamp + time;
+            while (true) {
+                if (new Date().getTime() > endTime) {
+                    return;
+                }
+            }
+        }
+
+        function clearDB() {
+            layer.msg('正在清空...', {
+                icon: 16
+                , shade: 0.01
+                , time: 1000 * 1000
+            });
+            $.post("/api/kafka/cleardb", function (result) {
+                sleep(5000);
+                if (JSON.parse(result)["msg"] === "success") {
+                    layer.msg('清空成功！');
+                    sleep(2000);
+                    location.reload();
+                } else {
+                    alert(JSON.parse(result)["detail"])
+                }
+            })
+        }
+
+        $(function () {
+            const wc = $('#wordcount');
+            setInterval(function () {
+                $.post("/api/kafka/wordcount", function (result) {
+                    if (result.replace(" ", "") !== "") {
+                        const ele = document.getElementById("wordcount");
+                        ele.innerText = ele.innerText + result + "\n"
+                        const scrollHeight = wc.prop("scrollHeight");
+                        wc.scrollTop(scrollHeight, 200);
+                    }
+                })
+            }, 1000);
+        });
+    </script>
+</head>
+<body>
+<div class="layui-layout layui-layout-admin">
+    <div class="layui-header">
+        <div class="layui-logo layui-hide-xs layui-bg-black">集群管理系统</div>
+        <ul class="layui-nav layui-layout-left">
+            <li class="layui-nav-item layui-show-xs-inline-block layui-hide-sm" lay-header-event="menuLeft">
+                <i class="layui-icon layui-icon-spread-left"></i>
+            </li>
+
+            <li class="layui-nav-item layui-hide-xs"><a href="/hdfs">HDFS</a></li>
+            <li style="background: #3F3F3F" class="layui-nav-item layui-hide-xs"><a href="/kafka">Spark Streaming &
+                Kafka</a></li>
+            <li class="layui-nav-item layui-hide-xs"><a href="/mapreduce">MapReduce の WordCount</a></li>
+            <li class="layui-nav-item layui-hide-xs"><a href="/hbase">HBase</a></li>
+        </ul>
+        <ul class="layui-nav layui-layout-right">
+            <li class="layui-nav-item" lay-header-event="menuRight" lay-unselect>
+                <a href="/shell">
+                    <i class="layui-icon layui-icon-fonts-code" style="font-size: 20px;margin-right: 3px;">&nbsp;&nbsp;&nbsp;Shell控制台</i>
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <div th:replace="~{public::left-side}"></div>
+
+    <div class="layui-body">
+
+        <div class="layui-col-md4">
+            <blockquote class="layui-elem-quote layui-text">
+                <h1>生产者&nbsp;&nbsp;&nbsp;&nbsp;topictest</h1>
+                <div id="producer" style="width: 100%;height: 500px;resize: none;overflow: auto;" lay-verify="required"
+                     class="layui-textarea"></div>
+                <div class="layui-row">
+                    <div class="layui-col-md9">
+                        <div class="grid-demo grid-demo-bg1">
+                            <input id="content" type="text" autocomplete="off" placeholder="生产者 topictest 请输入内容"
+                                   class="layui-input" style="width: 90%;margin-top: 5px;overflow: auto;">
+                        </div>
+                    </div>
+                    <div class="layui-col-md3">
+                        <div class="grid-demo">
+                            <button style="margin-top: 5px;" onclick="send()" type="button" class="layui-btn"
+                                    lay-submit="" lay-filter="demo1">发送
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </blockquote>
+        </div>
+
+        <div class="layui-col-md4">
+            <blockquote class="layui-elem-quote layui-text">
+                <h1>生产者&nbsp;&nbsp;&nbsp;&nbsp;topictest2</h1>
+                <div id="producer2" style="width: 100%;height: 500px;resize: none;overflow: auto;" lay-verify="required"
+                     class="layui-textarea"></div>
+                <div class="layui-row">
+                    <div class="layui-col-md9">
+                        <div class="grid-demo grid-demo-bg1">
+                            <input id="content2" type="text" autocomplete="off" placeholder="生产者 topictest2 请输入内容"
+                                   class="layui-input" style="width: 90%;margin-top: 5px;overflow: auto;">
+                        </div>
+                    </div>
+                    <div class="layui-col-md3">
+                        <div class="grid-demo">
+                            <button style="margin-top: 5px;" onclick="send2()" type="button" class="layui-btn"
+                                    lay-filter="demo1">发送
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </blockquote>
+        </div>
+        <div class="layui-col-md4">
+            <blockquote class="layui-elem-quote layui-text">
+                <h1>消费者</h1>
+                <div id="consumer" style="width: 100%;height: 543px;resize: none;overflow: auto;"
+                     class="layui-textarea"></div>
+            </blockquote>
+        </div>
+        <hr>
+        <blockquote class="layui-elem-quote layui-text">
+            <div class="layui-row">
+                <div class="layui-col-xs12 layui-col-md8">
+                    <h1>Spark Streaming 对生产者发送内容进行单词计数</h1>
+                </div>
+                <div class="layui-col-xs6 layui-col-md4">
+                    <button style="margin-top: 5px;" class="layui-btn"
+                            onclick="clearDB()" lay-filter="demo1"> 清 空
+                    </button>
+                </div>
+            </div>
+            <div class="layui-textarea" id="wordcount" readonly
+                 style="width: 80%;height: 500px;resize: none;overflow: auto;"></div>
+        </blockquote>
+    </div>
+</div>
+</body>
+</html>
+

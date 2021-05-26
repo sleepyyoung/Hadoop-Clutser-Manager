@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>HDFS</title>
+    <link rel="stylesheet" th:href="@{/layui/css/layui.css}" media="all">
+    <script type='text/javascript' th:src='@{/js/jquery.min.js}'></script>
+    <script th:src="@{/layui/layui.js}" charset="utf-8"></script>
+    <script>
+        const table = layui.table;
+
+        function table_reload() {
+            table.render({
+                elem: '#test'
+                , url: '/api/hdfs/scanDirs?hdfsDir=%2F'
+                , cols: [
+                    [
+                        {field: 'pathName', title: '文件路径'}
+                        , {field: 'type', title: '文件类型'}
+                        , {fixed: 'right', title: '操作', toolbar: '#barDemo', width: 200}
+                    ]
+                ]
+            });
+        }
+
+        function upload() {
+            layer.msg('正在上传...', {
+                icon: 16
+                , shade: 0.01
+            });
+            $.post("/api/hdfs/uploadFile", {
+                localFile: $("#localFile").val(),
+                hdfsDir: $("#hdfsDir").val()
+            }, function (result) {
+                if (JSON.parse(result)["msg"] === "success") {
+                    layer.msg('上传成功');
+                    layer.closeAll('loading');
+                    table_reload();
+                } else {
+                    layer.msg('上传失败');
+                    layer.alert(JSON.parse(result)["detail"])
+                }
+            })
+        }
+
+        layui.use('table', function () {
+            table_reload();
+            table.on('tool(test)', function (obj) {
+                const data = obj.data;
+                if (obj.event === 'del') {
+                    layer.confirm('确定要删除吗', function (index) {
+                        layer.msg('正在删除...', {
+                            icon: 16
+                            , shade: 0.01
+                        });
+                        $.post("/api/hdfs/deleteResource", {resourcePath: data.pathName}, function (result) {
+                            if (JSON.parse(result)['msg'] === "success") {
+                                layer.msg('删除成功');
+                                layer.closeAll('loading');
+                                table_reload();
+                            } else {
+                                alert(JSON.parse(result)['detail'])
+                            }
+                        })
+                    });
+                } else if (obj.event === 'download') {
+                    layer.msg('正在下载...', {
+                        icon: 16
+                        , shade: 0.01
+                    });
+                    $.post("/api/hdfs/downloadResource", {resourcePath: data.pathName}, function (result) {
+                        if (JSON.parse(result)['msg'] === "success") {
+                            layer.msg('已成功下载至桌面');
+                            layer.closeAll('loading');
+                        } else {
+                            layer.alert(JSON.parse(result)['detail'])
+                        }
+                    })
+                } else if (obj.event === 'review') {
+                    $.get("/api/hdfs/getFileContent", {fileName: data.pathName}, function (result) {
+                        if (JSON.parse(result)['msg'] === "success") {
+                            layer.open({
+                                type: 1
+                                , title: data.pathName
+                                , area: ['1000px', '500px']
+                                , shade: 0
+                                , offset: [100, 100]
+                                , maxmin: true
+                                , content: JSON.parse(result)['detail']
+                            });
+                        } else {
+                            layer.alert(JSON.parse(result)['detail'])
+                        }
+                    })
+                }
+            });
+        });
+    </script>
+</head>
+<body>
+<div class="layui-layout layui-layout-admin">
+    <div class="layui-header">
+        <div class="layui-logo layui-hide-xs layui-bg-black">集群管理系统</div>
+        <ul class="layui-nav layui-layout-left">
+            <li class="layui-nav-item layui-show-xs-inline-block layui-hide-sm" lay-header-event="menuLeft">
+                <i class="layui-icon layui-icon-spread-left"></i>
+            </li>
+            <li style="background: #3F3F3F" class="layui-nav-item layui-hide-xs"><a href="/hdfs">HDFS</a></li>
+            <li class="layui-nav-item layui-hide-xs"><a href="/kafka">Spark Streaming & Kafka</a></li>
+            <li class="layui-nav-item layui-hide-xs"><a href="/mapreduce">MapReduce の WordCount</a></li>
+            <li class="layui-nav-item layui-hide-xs"><a href="/hbase">HBase</a></li>
+        </ul>
+        <ul class="layui-nav layui-layout-right">
+            <li class="layui-nav-item" lay-header-event="menuRight" lay-unselect>
+                <a href="/shell">
+                    <i class="layui-icon layui-icon-fonts-code" style="font-size: 20px;margin-right: 3px;">&nbsp;&nbsp;&nbsp;Shell控制台</i>
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <div th:replace="~{public::left-side}"></div>
+
+    <div class="layui-body">
+        <blockquote class="layui-elem-quote layui-text">
+            <h1>上传文件</h1>
+        </blockquote>
+        <form class="layui-form" action="" method="post" style="margin-top: 1%;">
+            <div class="layui-form-item">
+                <label class="layui-form-label" style="width: 170px;text-align: center;">请输入本地文件路径：</label>
+                <div class="layui-input-block" style="margin-left: 150px;">
+                    <input id="localFile" type="text" autocomplete="off" placeholder="请输入本地文件路径" class="layui-input"
+                           style="width: 70%">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label" style="width: 170px;text-align: center;">请输入HDFS文件路径：</label>
+                <div class="layui-input-block" style="margin-left: 150px;">
+                    <input id="hdfsDir" type="text" autocomplete="off" placeholder="请输入HDFS文件路径" class="layui-input"
+                           style="width: 70%">
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <div class="layui-input-block" style="text-align: left;margin-left: 50px;">
+                    <button onclick="upload()" type="button" class="layui-btn" lay-submit="" lay-filter="demo1">点击上传
+                    </button>
+                </div>
+            </div>
+        </form>
+        <hr>
+        <blockquote class="layui-elem-quote layui-text">
+            <h1>HDFS文件系统详情</h1>
+        </blockquote>
+
+        <table class="layui-hide" id="test" lay-filter="test"></table>
+        <script type="text/html" id="barDemo">
+            <a class="layui-btn layui-btn-xs  layui-btn-normal" lay-event="review">预览</a>
+            <a class="layui-btn layui-btn-xs" lay-event="download">下载</a>
+            <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+        </script>
+    </div>
+</div>
+</body>
+</html>

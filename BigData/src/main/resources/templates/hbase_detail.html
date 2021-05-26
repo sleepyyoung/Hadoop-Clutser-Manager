@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    <link rel="stylesheet" th:href="@{/layui/css/layui.css}" media="all">
+    <script type='text/javascript' th:src='@{/js/jquery.min.js}'></script>
+    <script th:src="@{/layui/layui.js}" charset="utf-8"></script>
+</head>
+<body>
+<blockquote class="layui-elem-quote layui-text">
+    <h3>所有列族：</h3>
+</blockquote>
+
+<table class="layui-table" style="overflow: auto" >
+    <thead>
+    <tr>
+        <th th:each="f:${allFamilyNames}" th:text="${f}"></th>
+    </tr>
+    </thead>
+</table>
+<blockquote class="layui-elem-quote layui-text">
+    <h3>非空列族：</h3>
+</blockquote>
+<table class="layui-table" style="overflow: auto" th:each="result:${results}">
+    <thead>
+    <tr>
+        <th th:rowspan="3" th:text="${result.get('rowKey')}"></th>
+        <th th:each="family:${result.get('families')}" th:text="${family.get('name')}" th:colspan="${family.get('length')}"></th>
+    </tr>
+    <tr>
+        <th th:each="qualifier:${result.get('qualifiers')}" th:text="${qualifier}"></th>
+    </tr>
+    <tr>
+        <th th:each="value:${result.get('values')}" th:text="${value}"></th>
+    </tr>
+    </thead>
+    <tbody>
+    </tbody>
+</table>
+
+
+
+</body>
+</html>
